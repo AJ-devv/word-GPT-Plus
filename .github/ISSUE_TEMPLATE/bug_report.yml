@@ -1,7 +1,7 @@
-name: "🐛 Bug Report"
+name: '🐛 Bug Report'
 description: 提交一个问题 / Report a bug
-title: "[Bug]: "
-labels: ["bug"]
+title: '[Bug]: '
+labels: ['bug']
 assignees:
   - Kuingsmile
 body:
@@ -20,11 +20,13 @@ body:
     id: read
     attributes:
       label: 前置阅读 | Pre-reading
-      description: 我已经自行查找、阅读以下内容（阅读了请打勾） | I have searched and read the following on my own (Please tick after reading)
+      description:
+        我已经自行查找、阅读以下内容（阅读了请打勾） | I have searched and read
+        the following on my own (Please tick after reading)
       options:
-        - label: "[Issues](https://github.com/Kuingsmile/word-gpt-plus/issues?q=is%3Aissue+sort%3Aupdated-desc+is%3Aclosed)"
+        - label: '[Issues](https://github.com/Kuingsmile/word-gpt-plus/issues?q=is%3Aissue+sort%3Aupdated-desc+is%3Aclosed)'
           required: true
-        - label: "[README](https://github.com/Kuingsmile/word-gpt-plus/blob/master/README.md)"
+        - label: '[README](https://github.com/Kuingsmile/word-gpt-plus/blob/master/README.md)'
           required: true
   - type: dropdown
     id: service
@@ -63,6 +65,8 @@ body:
     id: reproduce
     attributes:
       label: 问题重现 | Bug reproduce
-      description: 请复述Bug重现流程，必要时附图 | Please tell me the bug reproduction process, attach pictures if necessary
+      description:
+        请复述Bug重现流程，必要时附图 | Please tell me the bug reproduction
+        process, attach pictures if necessary
     validations:
       required: true

@@ -4,4 +4,4 @@ interface IStringKeyMap {
 
 type supportedPlatforms = 'official' | 'azure' | 'gemini' | 'ollama' | 'groq'
 
-type insertTypes = 'replace' |  'append' |  'newLine' | 'NoAction'
+type insertTypes = 'replace' | 'append' | 'newLine' | 'NoAction'

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vue-cli-service serve --port 3000",
     "serve": "vue-cli-service serve --port 3000",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --no-eslint",
     "lint": "vue-cli-service lint --fix",
     "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
     "cz": "git-cz",
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@picgo/bump-version": "^1.1.2",
-    "@types/office-js": "^1.0.495",
+    "@types/office-js": "^1.0.501",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vue/cli-plugin-babel": "^5.0.8",

@@ -7,21 +7,16 @@ import 'element-plus/dist/index.css'
 
 window.Office.onReady(() => {
   const app = createApp(App)
-  const debounce = (
-    fn: { apply: (arg0: any, arg1: IArguments) => void },
-    delay: number | undefined
-  ) => {
-    let timer: any = null
-    return function () {
-      // @ts-expect-error ts-migrate(2538) FIXME: Type 'this' cannot be used as an index type.
-      const context = this
-      // eslint-disable-next-line prefer-rest-params
-      const args = arguments as IArguments
-      clearTimeout(timer as number)
-      timer = setTimeout(function () {
-        fn.apply(context, args)
-      }, delay)
-    }
+
+  const debounce = <T extends (...args: any[]) => void>(
+    fn: T,
+    delay = 300
+  ): T => {
+    let timer: ReturnType<typeof setTimeout>
+    return ((...args: any[]) => {
+      clearTimeout(timer)
+      timer = setTimeout(() => fn(...args), delay)
+    }) as T
   }
 
   const _ResizeObserver = window.ResizeObserver
@@ -31,6 +26,25 @@ window.Office.onReady(() => {
       super(callback)
     }
   }
+  ;(globalThis as any).handleGptComment = async () => {
+    await Word.run(async context => {
+      const selection = context.document.getSelection()
+      selection.load('text')
+      await context.sync()
+
+      const selectedText = selection.text
+
+      if (!selectedText || selectedText.trim() === '') {
+        console.log('No text selected.')
+        return
+      }
+
+      const comment = 'GPT suggests reviewing this clause.'
+      selection.insertComment(comment)
+      await context.sync()
+    })
+  }
+
   app.use(i18n)
   app.use(router)
   app.use(ElementUI)
