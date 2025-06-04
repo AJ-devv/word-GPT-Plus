@@ -1,0 +1,26 @@
+# Ignore build output
+dist/
+coverage/
+node_modules/
+
+# Ignore lock files
+package-lock.json
+yarn.lock
+
+# Ignore bundled/minified files
+*.min.js
+*.bundle.js
+
+# Ignore IDE or OS-specific files
+.DS_Store
+*.log
+*.tmp
+.vscode/
+
+# Ignore static assets and compiled files
+public/
+assets/
+
+# Ignore auto-generated files
+*.generated.*
+*.bak

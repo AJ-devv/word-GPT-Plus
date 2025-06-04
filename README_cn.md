@@ -19,8 +19,8 @@
 
 ## 📋 简介
 
-Word GPT Plus 是一款将 AI 模型无缝集成到 Microsoft Word 中的插件，使您能够在文档
-中直接生成、翻译、总结和润色文本。增强您的写作流程，无需离开 Word 环境。
+Word GPT Plus 是一款将 AI 模型无缝集成到 Microsoft
+Word 中的插件，使您能够在文档中直接生成、翻译、总结和润色文本。增强您的写作流程，无需离开 Word 环境。
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/96409857/233878627-6b5abdfd-7ff6-4818-8b26-d78f74ea0e85.gif" width="45%" />
@@ -68,8 +68,8 @@ Word GPT Plus 是一款将 AI 模型无缝集成到 Microsoft Word 中的插件�
 - **OpenAI**：从 [OpenAI Platform](https://platform.openai.com/account/api-keys)
   获取 API 密钥
 - **Azure OpenAI**：在
-  [Azure OpenAI Service](https://go.microsoft.com/fwlink/?linkid=2222006) 申请访
-  问权限
+  [Azure OpenAI Service](https://go.microsoft.com/fwlink/?linkid=2222006)
+  申请访问权限
 - **Google Gemini**：从
   [Google AI Studio](https://developers.generativeai.google/) 请求 API 访问
 - **Groq**：从 [Groq Console](https://console.groq.com/keys) 获取 API 密钥
@@ -85,15 +85,15 @@ Word GPT Plus 是一款将 AI 模型无缝集成到 Microsoft Word 中的插件�
 2. 保存到您计算机上的目录（例如：`C:\Users\用户名\Documents\WordGPT`）
 3. 按照下方[插件安装指南](#添加插件到-word)操作
 
-> **中国用户注意**：如果遇到连接问题，请尝试将 `msq.pub` 添加到您的代理规则，或
-> 使用自托管选项。
+> **中国用户注意**：如果遇到连接问题，请尝试将 `msq.pub`
+> 添加到您的代理规则，或使用自托管选项。
 
 ### 方案二：Docker 部署
 
 #### 本地运行
 
-如果你想要自己搭建服务，你需要克隆这个仓库并安装依赖项，然后运行项目。需要
-Node.js 16+。
+如果你想要自己搭建服务，你需要克隆这个仓库并安装依赖项，然后运行项目。需要Node.js
+16+。
 
 ```bash
 git clone https://github.com/Kuingsmile/Word-GPT-Plus.git
@@ -112,8 +112,7 @@ docker pull kuingsmile/word-gpt-plus
 docker run -d -p 3000:80 kuingsmile/word-gpt-plus
 ```
 
-manifest.xml需要修改所有的`[localhost:3000](http://localhost:3000)`为你的服务器
-地址。
+manifest.xml需要修改所有的`[localhost:3000](http://localhost:3000)`为你的服务器地址。
 
 然后，按照下面的 [旁加载插件](#旁加载插件) 说明安装插件。
 
@@ -121,8 +120,7 @@ manifest.xml需要修改所有的`[localhost:3000](http://localhost:3000)`为你
 
 为了开始使用 Word GPT Plus，你需要将插件旁加载到 Microsoft Word 中。
 
-你可以在下面的链接中找到微软提供的说
-明：[sideload office add-ins](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins)
+你可以在下面的链接中找到微软提供的说明：[sideload office add-ins](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins)
 
 1. 打开你保存了 `manifest.xml` 文件的文件夹，例如
    `C:\Users\username\Documents\WordGPT`.
@@ -130,8 +128,8 @@ manifest.xml需要修改所有的`[localhost:3000](http://localhost:3000)`为你
 3. 在 **属性** 对话框中，选择 **共享** 选项卡，然后选择 **共享**.
    ![image](https://learn.microsoft.com/en-us/office/dev/add-ins/images/sideload-windows-properties-dialog.png)
 4. 在 **网络访问** 对话框中，添加你自己和任何你想要共享的其他用户，选择 **共享**
-   按钮，当你看到你的文件夹被共享的确认信息时，注意显示在文件夹名称后面的 **完整
-   网络路径**.
+   按钮，当你看到你的文件夹被共享的确认信息时，注意显示在文件夹名称后面的
+   **完整网络路径**.
    ![image](https://learn.microsoft.com/en-us/office/dev/add-ins/images/sideload-windows-network-access-dialog.png)
 5. 在 Word 中打开一个新文档，选择 **文件** 选项卡，然后选择 **选项**.
 6. 选择 **信任中心**，然后选择 **信任中心设置** 按钮.
@@ -146,8 +144,8 @@ manifest.xml需要修改所有的`[localhost:3000](http://localhost:3000)`为你
 
 ## 如何填写API key
 
-进入Word GPT Plus后，点击主页的橙色`设置`按钮，进入设置页面，即可切换API和填写
-API key。
+进入Word GPT
+Plus后，点击主页的橙色`设置`按钮，进入设置页面，即可切换API和填写API key。
 
 ## 贡献
 

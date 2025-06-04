@@ -1,14 +1,17 @@
 <template>
   <div id="app">
-    <router-view />
+    <CommandPanel />
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+ import CommandPanel from './components/CommandPanel.vue'
+//import CommandPanel from './components/CommandPanel.test.vue'
+</script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
