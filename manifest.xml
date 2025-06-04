@@ -26,7 +26,7 @@
     <Host Name="Document" />
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://splendorous-concha-cd0def.netlify.app/index.html"/>
+    <SourceLocation DefaultValue="https://word-add-in1.netlify.app/taskpane.html" />
   </DefaultSettings>
 
   <Permissions>ReadWriteDocument</Permissions>
