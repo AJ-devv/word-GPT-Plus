@@ -1173,24 +1173,35 @@ Your tasks:
       })
     })
 
-    const data = await res.json()
-    const raw = data.choices?.[0]?.message?.content || '[]'
-    console.log('🧾 General GPT Response:', raw)
+const data = await res.json()
+const raw = data.choices?.[0]?.message?.content || '[]'
 
-    let parsedAll: any[] = []
-    try {
-      parsedAll = JSON.parse(raw.replace(/]\s*\[/g, ','))
-    } catch (err) {
-      throw new Error(`❌ GPT response was not valid JSON:\n${raw}`)
-    }
+// ✅ Log to console
+console.log('🧾 General GPT Response:', raw)
 
-    const named = parsedAll.map((r: any) => ({
-      name: r.name || r.ruleName || 'Unnamed Clause',
-      status: r.status || 'review',
-      summary: r.summary || '',
-      explanation: r.explanation || '',
-      redline: r.redline || ''
-    }))
+// ✅ Append to in-app debug panel
+debugLog.value += '\n\n🧾 GPT Response:\n' + raw
+debugLog.value += '\n⏳ Attempting to parse GPT JSON output...'
+
+let parsedAll: any[] = []
+try {
+  // Clean up formatting artifacts, if any
+  const fixedRaw = raw.replace(/]\s*\[/g, ',')
+  parsedAll = JSON.parse(fixedRaw)
+  debugLog.value += '\n✅ JSON parsed successfully.'
+} catch (err) {
+  debugLog.value += '\n❌ Failed to parse GPT JSON:\n' + (err as Error).message
+  throw new Error(`❌ GPT response was not valid JSON:\n${raw}`)
+}
+
+// ✅ Normalize the parsed objects
+const named = parsedAll.map((r: any) => ({
+  name: r.name || r.ruleName || 'Unnamed Clause',
+  status: r.status || 'review',
+  summary: r.summary || '',
+  explanation: r.explanation || '',
+  redline: r.redline || ''
+}))
 
     structuredGeneralResults.value = named
     named.forEach(r => {
