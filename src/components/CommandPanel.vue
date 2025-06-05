@@ -125,97 +125,55 @@
             {{ reviewLoading ? 'Analyzing...' : 'Start General Review' }}
           </button>
         </div>
-      </div>
 
-      <!-- ✅ REVIEW RESULTS: Playbook Review -->
-      <div v-if="playbookResults.length" class="review-result" style="margin-top: 20px">
-        <h3>Playbook Review Results</h3>
-        <div style="margin: 12px 0">
-          <strong>Status:</strong>
-          ✔️ {{ compliantCount }} compliant |
-          ❌ {{ issueCount }} issues |
-          ⚠️ {{ reviewCount }} review
+        <!-- ✅ Debug Output for Contract Text / Errors -->
+        <div v-if="debugLog" style="margin-top: 20px; font-size: 11px; color: #666;">
+          <strong>Debug Output:</strong>
+          <pre style="white-space: pre-wrap; background: #f8f8f8; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+{{ debugLog }}
+      </pre>
         </div>
+      </div>
+    </section>
 
-        <ul>
-          <li
-            v-for="r in playbookResults"
-            :key="r.name"
-            class="mb-4 p-4 border rounded-lg bg-white shadow-sm"
-          >
-            <div class="flex items-center gap-3 mb-2">
-              <span class="text-xl">
-                {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
-              </span>
-              <h3 class="font-semibold text-lg">{{ r.name }}</h3>
-            </div>
 
-            <div v-if="r.summary" class="mb-2">
-              <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
-            </div>
-
-            <div v-if="r.explanation" class="mb-2">
-              <p><strong>Explanation:</strong> {{ r.explanation }}</p>
-            </div>
-
-            <div v-if="r.redline" class="mb-2">
-              <p><strong>Suggested Redline:</strong></p>
-              <pre class="bg-gray-50 border border-gray-300 p-2 rounded text-sm whitespace-pre-wrap">{{ r.redline }}</pre>
-            </div>
-
-            <div class="flex gap-2 mt-2">
-              <button
-                class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
-                :disabled="ruleReviewMap[r.name] === 'applied'"
-                @click="ruleReviewMap[r.name] = 'applied'"
-              >
-                ✅ Apply
-              </button>
-              <button
-                class="px-3 py-1 rounded text-sm border border-gray-400 text-gray-600 hover:bg-gray-100"
-                :disabled="ruleReviewMap[r.name] === 'ignored'"
-                @click="ruleReviewMap[r.name] = 'ignored'"
-              >
-                ❌ Ignore
-              </button>
-            </div>
-          </li>
-        </ul>
+    <!-- ✅ REVIEW RESULTS: Playbook Review -->
+    <div v-if="playbookResults.length" class="review-result" style="margin-top: 20px">
+      <h3>Playbook Review Results</h3>
+      <div style="margin: 12px 0">
+        <strong>Status:</strong>
+        ✔️ {{ compliantCount }} compliant |
+        ❌ {{ issueCount }} issues |
+        ⚠️ {{ reviewCount }} review
       </div>
 
-      <!-- ✅ REVIEW RESULTS: General Review -->
-      <div v-if="!playbookResults.length && structuredGeneralResults.length" class="review-result" style="margin-top: 20px">
-        <h3>Review Results</h3>
-        <p style="font-size: 13px; color: #555; margin-bottom: 12px">
-          📄 General Contract Analysis
-        </p>
-
-        <div
-          v-for="(r, i) in structuredGeneralResults"
-          :key="i"
+      <ul>
+        <li
+          v-for="r in playbookResults"
+          :key="r.name"
           class="mb-4 p-4 border rounded-lg bg-white shadow-sm"
         >
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-3 mb-2">
             <span class="text-xl">
               {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
             </span>
-            <h4 class="text-lg font-semibold">{{ r.name }}</h4>
+            <h3 class="font-semibold text-lg">{{ r.name }}</h3>
           </div>
 
-          <div v-if="r.summary" class="mb-1">
-            <p>{{ r.summary }}</p>
+          <div v-if="r.summary" class="mb-2">
+            <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
           </div>
 
-          <div v-if="r.explanation" class="mb-2 text-gray-800">
+          <div v-if="r.explanation" class="mb-2">
             <p><strong>Explanation:</strong> {{ r.explanation }}</p>
           </div>
 
           <div v-if="r.redline" class="mb-2">
-            <p class="font-semibold mb-1">Suggested Redline:</p>
+            <p><strong>Suggested Redline:</strong></p>
             <pre class="bg-gray-50 border border-gray-300 p-2 rounded text-sm whitespace-pre-wrap">{{ r.redline }}</pre>
           </div>
 
-          <div class="flex gap-2 mt-1">
+          <div class="flex gap-2 mt-2">
             <button
               class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
               :disabled="ruleReviewMap[r.name] === 'applied'"
@@ -231,9 +189,61 @@
               ❌ Ignore
             </button>
           </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ✅ REVIEW RESULTS: General Review -->
+    <div v-if="!playbookResults.length && structuredGeneralResults.length" class="review-result" style="margin-top: 20px">
+      <h3>Review Results</h3>
+      <p style="font-size: 13px; color: #555; margin-bottom: 12px">
+        📄 General Contract Analysis
+      </p>
+
+      <div
+        v-for="(r, i) in structuredGeneralResults"
+        :key="i"
+        class="mb-4 p-4 border rounded-lg bg-white shadow-sm"
+      >
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-xl">
+            {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
+          </span>
+          <h4 class="text-lg font-semibold">{{ r.name }}</h4>
+        </div>
+
+        <div v-if="r.summary" class="mb-1">
+          <p>{{ r.summary }}</p>
+        </div>
+
+        <div v-if="r.explanation" class="mb-2 text-gray-800">
+          <p><strong>Explanation:</strong> {{ r.explanation }}</p>
+        </div>
+
+        <div v-if="r.redline" class="mb-2">
+          <p class="font-semibold mb-1">Suggested Redline:</p>
+          <pre class="bg-gray-50 border border-gray-300 p-2 rounded text-sm whitespace-pre-wrap">{{ r.redline }}</pre>
+        </div>
+
+        <div class="flex gap-2 mt-1">
+          <button
+            class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
+            :disabled="ruleReviewMap[r.name] === 'applied'"
+            @click="ruleReviewMap[r.name] = 'applied'"
+          >
+            ✅ Apply
+          </button>
+          <button
+            class="px-3 py-1 rounded text-sm border border-gray-400 text-gray-600 hover:bg-gray-100"
+            :disabled="ruleReviewMap[r.name] === 'ignored'"
+            @click="ruleReviewMap[r.name] = 'ignored'"
+          >
+            ❌ Ignore
+          </button>
         </div>
       </div>
-    </section>
+    </div>
+   
 
 
 
@@ -1084,26 +1094,31 @@ try {
   if (result && result.length > 30) {
     contractText = result
     console.log('📄 Word.run contract text:', contractText)
+    debugLog.value = '📄 Word.run contract text:\n' + contractText
   } else {
     console.warn('⚠️ Word.run returned insufficient or empty text.')
+    debugLog.value = '⚠️ Word.run returned insufficient or empty text.'
   }
 } catch (err) {
   console.warn('⚠️ Word.run failed, attempting Office.context fallback:', err)
+  debugLog.value = '⚠️ Word.run failed, trying fallback.\n' + (err as Error).message
 
   // Fallback using Office.context.document.body.getAsync
   await new Promise<void>((resolve) => {
     ;(Office.context.document as any).body.getAsync("text", (result: any) => {
-
       if (result.status === Office.AsyncResultStatus.Succeeded) {
         contractText = result.value
         console.log('📄 Office.context contract text (fallback):', contractText)
+        debugLog.value = '📄 Office.context contract text (fallback):\n' + contractText
       } else {
         console.error('❌ Could not retrieve Word document text:', result.error)
+        debugLog.value = '❌ Error retrieving Word text:\n' + result.error?.message || 'Unknown error'
       }
       resolve()
     })
   })
 }
+
 
 
   const prompt = `
@@ -1308,6 +1323,8 @@ const ruleEnabledMap = reactive<Record<string, boolean>>({}) // ✅ NEW
 const ruleReviewMap = reactive<Record<string, 'applied' | 'ignored' | ''>>({})
 const redlineEditMode = reactive<Record<string, boolean>>({})
 const originalRedlines = reactive<Record<string, string>>({})
+const debugLog = ref('')
+
 
 
 const storedReviewMap = localStorage.getItem('ruleReviewMap')
