@@ -86,7 +86,8 @@
 
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812" />
-        <bt:Url id="Taskpane.Url" DefaultValue="https://splendorous-concha-cd0def.netlify.app/index.html" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://word-add-in1.netlify.app/index.html" />
+
       </bt:Urls>
 
       <bt:ShortStrings>

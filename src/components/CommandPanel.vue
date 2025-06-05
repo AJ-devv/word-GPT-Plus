@@ -1072,19 +1072,39 @@ THIS NON-DISCLOSURE AGREEMENT (the “Agreement”) is made between Party A and 
 `.trim()
 
   // ✅ Production: Try to read real contract from Word (when sideloaded)
-  try {
-    const result = await Word.run(async context => {
-      const body = context.document.body
-      context.load(body, 'text')
-      await context.sync()
-      return body.text
-    })
-    if (result && result.length > 30) {
-      contractText = result
-    }
-  } catch (err) {
-    console.warn('⚠️ Could not load Word text:', err)
+try {
+  // Try using Word.run API
+  const result = await Word.run(async context => {
+    const body = context.document.body
+    context.load(body, 'text')
+    await context.sync()
+    return body.text
+  })
+
+  if (result && result.length > 30) {
+    contractText = result
+    console.log('📄 Word.run contract text:', contractText)
+  } else {
+    console.warn('⚠️ Word.run returned insufficient or empty text.')
   }
+} catch (err) {
+  console.warn('⚠️ Word.run failed, attempting Office.context fallback:', err)
+
+  // Fallback using Office.context.document.body.getAsync
+  await new Promise<void>((resolve) => {
+    ;(Office.context.document as any).body.getAsync("text", (result: any) => {
+
+      if (result.status === Office.AsyncResultStatus.Succeeded) {
+        contractText = result.value
+        console.log('📄 Office.context contract text (fallback):', contractText)
+      } else {
+        console.error('❌ Could not retrieve Word document text:', result.error)
+      }
+      resolve()
+    })
+  })
+}
+
 
   const prompt = `
 You are a legal contract reviewer AI. The user uploaded the following contract:
@@ -1885,6 +1905,22 @@ const runPlaybook = async () => {
     return
   }
 
+  // ✅ STEP 1: Try to get real document text
+  let contractText = ''
+  try {
+    const result = await Word.run(async context => {
+      const body = context.document.body
+      context.load(body, 'text')
+      await context.sync()
+      return body.text
+    })
+    contractText = result || ''
+  } catch (err) {
+    console.warn('⚠️ Could not load Word text:', err)
+    alert('Could not read the contract text from Word. Please ensure the add-in has access.')
+    return
+  }
+
   playbookResults.value = []
 
   const formatted = enabledRules
@@ -1896,21 +1932,34 @@ Clarification: ${r.clarification || 'None provided'}`
     )
     .join('\n---\n')
 
-  const playbookPrompt = `You are an AI contract reviewer analyzing an agreement using the user's selected rules.
+  const playbookPrompt = `
+You are an AI contract reviewer analyzing the following agreement:
 
-Your tasks:
-1. Evaluate each rule individually for compliance.
-2. Identify **logical conflicts between rules** (e.g., multiple governing law preferences).
-3. If you detect multiple governing law clauses (e.g., Georgia, Iowa, Wyoming), flag **all of them** with:
-   - status: "issue"
-   - summary: "Conflicting governing laws specified"
-   - explanation: "Multiple jurisdictions were requested. Only one governing law should apply."
+"""
+${contractText}
+"""
 
-⚠️ Return exactly one valid JSON array of result objects.
-🚫 DO NOT include multiple arrays or extra commentary.
+The user has provided these playbook rules:
 
-Rules:
-${formatted}`
+${formatted}
+
+Tasks:
+1. Evaluate each rule individually against the contract.
+2. Identify conflicts (e.g., multiple governing laws).
+3. Return exactly one valid JSON array like this:
+
+[
+  {
+    "name": "Rule Name",
+    "status": "compliant" | "issue" | "review",
+    "summary": "Summary of clause or issue",
+    "explanation": "Why it complies or not",
+    "redline": "Redline version if applicable"
+  }
+]
+
+DO NOT return any commentary or multiple arrays.
+  `.trim()
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1924,7 +1973,7 @@ ${formatted}`
         messages: [
           {
             role: 'system',
-            content: `You are an expert legal reviewer. Return only a single valid JSON array of rule results. Never return commentary.`
+            content: `You are an expert legal reviewer. Return only a single valid JSON array. No commentary.`
           },
           {
             role: 'user',
@@ -1948,19 +1997,15 @@ ${formatted}`
     }
 
     const enabledNames = new Set(enabledRules.map((r: any) => r.name))
-const parsed = parsedAll.filter((r: any) =>
-  enabledNames.has(r.name || r.ruleName)
-).map((r: any) => ({
-  name: r.name || r.ruleName,
-  status: r.status,
-  summary: r.summary,
-  redline: r.redline || '',
-  explanation: r.explanation
-}))
-
-
-    console.log('🧪 Enabled Rule Names:', [...enabledNames])
-    console.log('✅ Filtered GPT Results:', parsed.map((r: any) => r.name))
+    const parsed = parsedAll.filter((r: any) =>
+      enabledNames.has(r.name || r.ruleName)
+    ).map((r: any) => ({
+      name: r.name || r.ruleName,
+      status: r.status,
+      summary: r.summary,
+      redline: r.redline || '',
+      explanation: r.explanation
+    }))
 
     playbookResults.value = parsed
 
