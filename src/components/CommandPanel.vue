@@ -1126,7 +1126,7 @@ try {
 
 
 
-  const prompt = `
+const prompt = `
 You are a legal contract reviewer AI. The user uploaded the following contract:
 
 """
@@ -1141,19 +1141,30 @@ Your tasks:
 2. Intuit the user’s likely legal goal
 3. Identify contradictions or clauses that work against that goal
 4. Flag missing or risky provisions
-5. Return at least 3 clause evaluations, even if they are all compliant or standard. Always output a single valid JSON array like this:
+5. Return at least 3 clause evaluations, even if they are all compliant or standard.
+6. For each clause, provide:
+   - name
+   - status: "compliant", "issue", or "review"
+   - summary: what the clause says
+   - explanation: how it supports or harms the goal
+   - redline: if improvement is needed
+
+Return only a valid JSON array like this:
+
 [
   {
-    "name": "Clause Title",
-    "status": "compliant" | "issue" | "review",
-    "summary": "What the clause says",
-    "explanation": "Why it helps or harms the goal",
-    "redline": "If needed, suggest a redline"
-  }
+    "name": "Confidentiality",
+    "status": "compliant",
+    "summary": "The agreement includes a confidentiality clause.",
+    "explanation": "It protects sensitive information.",
+    "redline": ""
+  },
+  ...
 ]
 
-🚫 No comments or notes outside the array.
+No comments or notes outside the array.
 `.trim()
+
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
