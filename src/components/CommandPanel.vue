@@ -236,7 +236,8 @@
             <button
               class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
               :disabled="ruleReviewMap[r.name] === 'applied'"
-              @click="() => applyRedline(r)"
+              @click="applyRedline(r)"
+
             >
               ✅ Apply
             </button>
@@ -778,6 +779,7 @@ import {
 
 import DOMPurify from 'dompurify'
 
+const clauseRanges = reactive<Record<string, Word.Range>>({})
 
 
 const showActions = ref(false)
@@ -953,13 +955,15 @@ function highlightClause(clauseName: string) {
     const body = context.document.body
     const searchResults = body.search(clauseName, {
       matchCase: false,
-      matchWholeWord: false,
+      matchWholeWord: false
     })
     context.load(searchResults, 'items')
     await context.sync()
 
     if (searchResults.items.length > 0) {
-      searchResults.items[0].select()
+      const range = searchResults.items[0]
+      range.select()
+      clauseRanges[clauseName] = range
     } else {
       console.warn(`⚠️ Could not find clause: ${clauseName}`)
     }
@@ -967,16 +971,32 @@ function highlightClause(clauseName: string) {
 }
 
 
+
 // ✅ Insert redline into document when Apply is clicked
 function applyRedline(r: any) {
   if (!r.redline) return
+
   Word.run(async context => {
-    const range = context.document.getSelection()
-    range.insertText(r.redline, Word.InsertLocation.replace)
+    // Re-search the clause name to get a live range in the current context
+    const searchResults = context.document.body.search(r.name, {
+      matchCase: false,
+      matchWholeWord: false
+    })
+    context.load(searchResults, 'items')
     await context.sync()
-    ruleReviewMap[r.name] = 'applied'
+
+    if (searchResults.items.length > 0) {
+      const liveRange = searchResults.items[0]
+      liveRange.insertText(r.redline, Word.InsertLocation.replace)
+      ruleReviewMap[r.name] = 'applied'
+    } else {
+      console.warn(`⚠️ Could not find clause in document: ${r.name}`)
+    }
+
+    await context.sync()
   })
 }
+
 
 
 
