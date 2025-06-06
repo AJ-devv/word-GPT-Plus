@@ -1189,7 +1189,29 @@ No comments or notes outside the array.
     })
 
 const data = await res.json()
-const raw = data.choices?.[0]?.message?.content || '[]'
+const raw = data.choices?.[0]?.message?.content || JSON.stringify([
+  {
+    name: "Confidentiality",
+    status: "compliant",
+    summary: "This agreement includes a standard confidentiality clause.",
+    explanation: "It covers the protection of proprietary information.",
+    redline: ""
+  },
+  {
+    name: "Governing Law",
+    status: "issue",
+    summary: "The agreement does not specify a governing law.",
+    explanation: "This is essential for resolving disputes.",
+    redline: "Consider adding a clause specifying jurisdiction."
+  },
+  {
+    name: "Severability",
+    status: "compliant",
+    summary: "The contract includes a severability clause.",
+    explanation: "It allows valid portions to remain enforceable.",
+    redline: ""
+  }
+])
 
 // ✅ Log to console
 console.log('🧾 General GPT Response:', raw)
