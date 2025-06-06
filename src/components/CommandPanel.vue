@@ -1141,8 +1141,7 @@ Your tasks:
 2. Intuit the user’s likely legal goal
 3. Identify contradictions or clauses that work against that goal
 4. Flag missing or risky provisions
-5. Return only a **single valid JSON array**, like this:
-
+5. Return at least 3 clause evaluations, even if they are all compliant or standard. Always output a single valid JSON array like this:
 [
   {
     "name": "Clause Title",
