@@ -779,7 +779,7 @@ import {
 
 import DOMPurify from 'dompurify'
 
-const clauseRanges = reactive<Record<string, Word.Range>>({})
+
 
 
 const showActions = ref(false)
@@ -952,23 +952,26 @@ const alertCommand = (cmd: string) => {
 // ✅ Highlight clause in Word when the clause title is clicked
 function highlightClause(clauseName: string) {
   Word.run(async context => {
-    const body = context.document.body
+    const body = context.document.body;
     const searchResults = body.search(clauseName, {
       matchCase: false,
-      matchWholeWord: false
-    })
-    context.load(searchResults, 'items')
-    await context.sync()
+      matchWholeWord: false,
+      ignorePunct: true,
+      ignoreSpace: true,
+    });
+    context.load(searchResults, 'items');
+    await context.sync();
 
     if (searchResults.items.length > 0) {
-      const range = searchResults.items[0]
-      range.select()
-      clauseRanges[clauseName] = range
+      searchResults.items[0].select(); // Select first match
+      console.log(`✅ Found and selected clause: ${clauseName}`);
     } else {
-      console.warn(`⚠️ Could not find clause: ${clauseName}`)
+      console.warn(`⚠️ Could not find clause text in Word for: ${clauseName}`);
+      alert(`Clause "${clauseName}" not found in document.`);
     }
-  })
+  });
 }
+
 
 
 
