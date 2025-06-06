@@ -953,52 +953,66 @@ const alertCommand = (cmd: string) => {
 function highlightClause(clauseName: string) {
   Word.run(async context => {
     const body = context.document.body;
+
+    // Search for the clause title text with flexible matching
     const searchResults = body.search(clauseName, {
       matchCase: false,
       matchWholeWord: false,
       ignorePunct: true,
-      ignoreSpace: true,
+      ignoreSpace: true
     });
+
     context.load(searchResults, 'items');
     await context.sync();
 
     if (searchResults.items.length > 0) {
-      searchResults.items[0].select(); // Select first match
+      // Select and scroll to the first match
+      searchResults.items[0].select();
       console.log(`✅ Found and selected clause: ${clauseName}`);
     } else {
+      // Clear feedback if clause not found
       console.warn(`⚠️ Could not find clause text in Word for: ${clauseName}`);
-      alert(`Clause "${clauseName}" not found in document.`);
+      alert(`❌ Could not find clause text for “${clauseName}” in the document.`);
     }
+
+    await context.sync();
+  }).catch(err => {
+    console.error('❌ highlightClause error:', err);
+    alert('An error occurred while trying to find the clause in Word.');
   });
 }
 
 
 
 
-// ✅ Insert redline into document when Apply is clicked
+
+// ✅ Re-search and insert redline when Apply is clicked
 function applyRedline(r: any) {
   if (!r.redline) return
 
   Word.run(async context => {
-    // Re-search the clause name to get a live range in the current context
-    const searchResults = context.document.body.search(r.name, {
+    const body = context.document.body
+    const searchResults = body.search(r.name, {
       matchCase: false,
-      matchWholeWord: false
+      matchWholeWord: false,
+      ignorePunct: true,
+      ignoreSpace: true
     })
     context.load(searchResults, 'items')
     await context.sync()
 
     if (searchResults.items.length > 0) {
-      const liveRange = searchResults.items[0]
-      liveRange.insertText(r.redline, Word.InsertLocation.replace)
+      const target = searchResults.items[0]
+      target.insertText(r.redline, Word.InsertLocation.replace)
       ruleReviewMap[r.name] = 'applied'
     } else {
-      console.warn(`⚠️ Could not find clause in document: ${r.name}`)
+      alert(`❌ Could not find clause text in document for: ${r.name}`)
     }
 
     await context.sync()
   })
 }
+
 
 
 
