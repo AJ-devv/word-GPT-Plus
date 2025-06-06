@@ -193,57 +193,62 @@
       </ul>
     </div>
 
-    <!-- ✅ REVIEW RESULTS: General Review -->
-    <div v-if="!playbookResults.length && structuredGeneralResults.length" class="review-result" style="margin-top: 20px">
-      <h3>Review Results</h3>
+    <!-- ✅ REVIEW RESULTS: General Review (styled to match Playbook results) -->
+    <div
+      v-if="!playbookResults.length && structuredGeneralResults.length"
+      class="review-result"
+      style="margin-top: 20px"
+    >
+      <h3>General Contract Analysis</h3>
       <p style="font-size: 13px; color: #555; margin-bottom: 12px">
-        📄 General Contract Analysis
+        🧠 AI Review of the uploaded agreement
       </p>
 
-      <div
-        v-for="(r, i) in structuredGeneralResults"
-        :key="i"
-        class="mb-4 p-4 border rounded-lg bg-white shadow-sm"
-      >
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-xl">
-            {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
-          </span>
-          <h4 class="text-lg font-semibold">{{ r.name }}</h4>
-        </div>
+      <ul>
+        <li
+          v-for="(r, i) in structuredGeneralResults"
+          :key="i"
+          class="mb-4 p-4 border rounded-lg bg-white shadow-sm"
+        >
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-xl">
+              {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
+            </span>
+            <h3 class="font-semibold text-lg">{{ r.name }}</h3>
+          </div>
 
-        <div v-if="r.summary" class="mb-1">
-          <p>{{ r.summary }}</p>
-        </div>
+          <div v-if="r.summary" class="mb-2">
+            <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
+          </div>
 
-        <div v-if="r.explanation" class="mb-2 text-gray-800">
-          <p><strong>Explanation:</strong> {{ r.explanation }}</p>
-        </div>
+          <div v-if="r.explanation" class="mb-2">
+            <p><strong>Explanation:</strong> {{ r.explanation }}</p>
+          </div>
 
-        <div v-if="r.redline" class="mb-2">
-          <p class="font-semibold mb-1">Suggested Redline:</p>
-          <pre class="bg-gray-50 border border-gray-300 p-2 rounded text-sm whitespace-pre-wrap">{{ r.redline }}</pre>
-        </div>
+          <div v-if="r.redline" class="mb-2">
+            <p><strong>Suggested Redline:</strong></p>
+            <pre class="bg-gray-50 border border-gray-300 p-2 rounded text-sm whitespace-pre-wrap">{{ r.redline }}</pre>
+          </div>
 
-        <div class="flex gap-2 mt-1">
-          <button
-            class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
-            :disabled="ruleReviewMap[r.name] === 'applied'"
-            @click="ruleReviewMap[r.name] = 'applied'"
-          >
-            ✅ Apply
-          </button>
-          <button
-            class="px-3 py-1 rounded text-sm border border-gray-400 text-gray-600 hover:bg-gray-100"
-            :disabled="ruleReviewMap[r.name] === 'ignored'"
-            @click="ruleReviewMap[r.name] = 'ignored'"
-          >
-            ❌ Ignore
-          </button>
-        </div>
-      </div>
+          <div class="flex gap-2 mt-2">
+            <button
+              class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
+              :disabled="ruleReviewMap[r.name] === 'applied'"
+              @click="ruleReviewMap[r.name] = 'applied'"
+            >
+              ✅ Apply
+            </button>
+            <button
+              class="px-3 py-1 rounded text-sm border border-gray-400 text-gray-600 hover:bg-gray-100"
+              :disabled="ruleReviewMap[r.name] === 'ignored'"
+              @click="ruleReviewMap[r.name] = 'ignored'"
+            >
+              ❌ Ignore
+            </button>
+          </div>
+        </li>
+      </ul>
     </div>
-   
 
 
 
