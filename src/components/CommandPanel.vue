@@ -216,7 +216,9 @@
             <span class="text-xl">
               {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
             </span>
-            <h3 class="font-semibold text-lg">{{ r.name }}</h3>
+            <h3 class="font-semibold text-lg cursor-pointer text-blue-700 hover:underline" @click="highlightClause(r.name)">
+              {{ r.name }}
+            </h3>
           </div>
 
           <div v-if="r.summary" class="mb-2">
