@@ -157,9 +157,9 @@
             <span class="text-xl">
               {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
             </span>
-            <h3 class="font-semibold text-lg cursor-pointer text-blue-700 hover:underline" @click="highlightClause(r.name)">
-              {{ r.name }}
-            </h3>
+           
+
+
           </div>
 
           <div v-if="r.summary" class="mb-2">
@@ -955,13 +955,16 @@ const alertCommand = (cmd: string) => {
 }
 
 
-// ✅ Highlight clause in Word when the clause title is clicked
-function highlightClause(clauseName: string) {
+function highlightClause(clauseText: string) {
+  const cleaned = clauseText.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
+
+  console.log('🧪 highlightClause() triggered');
+  console.log('🧪 Original:', clauseText);
+  console.log('🧪 Cleaned:', cleaned);
+
   Word.run(async context => {
     const body = context.document.body;
-
-    // Search for the clause title text with flexible matching
-    const searchResults = body.search(clauseName, {
+    const searchResults = body.search(cleaned, {
       matchCase: false,
       matchWholeWord: false,
       ignorePunct: true,
@@ -972,21 +975,19 @@ function highlightClause(clauseName: string) {
     await context.sync();
 
     if (searchResults.items.length > 0) {
-      // Select and scroll to the first match
+      console.log(`✅ Found ${searchResults.items.length} matches for: ${cleaned}`);
       searchResults.items[0].select();
-      console.log(`✅ Found and selected clause: ${clauseName}`);
     } else {
-      // Clear feedback if clause not found
-      console.warn(`⚠️ Could not find clause text in Word for: ${clauseName}`);
-      alert(`❌ Could not find clause text for “${clauseName}” in the document.`);
+      console.warn(`⚠️ No match for cleaned clause text: ${cleaned}`);
+      alert(`❌ Could not find "${clauseText}" in the document.`);
     }
-
-    await context.sync();
   }).catch(err => {
     console.error('❌ highlightClause error:', err);
-    alert('An error occurred while trying to find the clause in Word.');
+    alert('An error occurred trying to find and scroll to the clause in Word.');
   });
 }
+
+
 
 
 
