@@ -157,7 +157,9 @@
             <span class="text-xl">
               {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
             </span>
-            <h3 class="font-semibold text-lg">{{ r.name }}</h3>
+            <h3 class="font-semibold text-lg cursor-pointer text-blue-700 hover:underline" @click="highlightClause(r.name)">
+              {{ r.name }}
+            </h3>
           </div>
 
           <div v-if="r.summary" class="mb-2">
@@ -234,10 +236,11 @@
             <button
               class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
               :disabled="ruleReviewMap[r.name] === 'applied'"
-              @click="ruleReviewMap[r.name] = 'applied'"
+              @click="() => applyRedline(r)"
             >
               ✅ Apply
             </button>
+
             <button
               class="px-3 py-1 rounded text-sm border border-gray-400 text-gray-600 hover:bg-gray-100"
               :disabled="ruleReviewMap[r.name] === 'ignored'"
@@ -251,6 +254,7 @@
     </div>
 
 
+   
 
 
 
@@ -943,6 +947,38 @@ const alertCommand = (cmd: string) => {
 }
 
 
+// ✅ Highlight clause in Word when the clause title is clicked
+function highlightClause(clauseName: string) {
+  Word.run(async context => {
+    const body = context.document.body
+    const searchResults = body.search(clauseName, {
+      matchCase: false,
+      matchWholeWord: false,
+    })
+    context.load(searchResults, 'items')
+    await context.sync()
+
+    if (searchResults.items.length > 0) {
+      searchResults.items[0].select()
+    } else {
+      console.warn(`⚠️ Could not find clause: ${clauseName}`)
+    }
+  })
+}
+
+
+// ✅ Insert redline into document when Apply is clicked
+function applyRedline(r: any) {
+  if (!r.redline) return
+  Word.run(async context => {
+    const range = context.document.getSelection()
+    range.insertText(r.redline, Word.InsertLocation.replace)
+    await context.sync()
+    ruleReviewMap[r.name] = 'applied'
+  })
+}
+
+
 
 // GPT Call: Freeform from textarea
 async function sendMessage() {
@@ -1243,6 +1279,7 @@ const named = parsedAll.map((r: any) => ({
     structuredGeneralResults.value = named
     named.forEach(r => {
       originalRedlines[r.name] = r.redline || ''
+      ruleReviewMap[r.name] = '' // ✅ reset Apply/Ignore state for General Review
     })
 
     currentTab.value = 'review'
