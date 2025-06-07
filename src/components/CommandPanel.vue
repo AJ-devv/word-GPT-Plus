@@ -224,9 +224,7 @@
             </h3>
           </div>
 
-          <div v-if="r.summary" class="mb-2">
-            <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
-          </div>
+  
 
           <div v-if="r.summary" class="mb-2">
             <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
@@ -1275,12 +1273,14 @@ Your tasks:
 6. For each clause, return:
    - name: a short label
    - status: "compliant", "issue", or "review"
-   - summary: what the clause says
+   - summary: what the clause says in plain English
    - explanation: how it supports or harms the goal
-   - redline: suggested revision (if any)
-   - originalText: the full clause text exactly as it appears in the contract (copy-paste, no paraphrasing)
+   - redline: suggested revision (if needed)
+   - originalText: the exact quote of the clause as it appears in the contract. No paraphrasing. Copy it verbatim.
 
-Return only a single valid JSON array like this:
+DO NOT paraphrase in originalText. If you can't find a quote, return "".
+
+Return only one valid JSON array like this:
 
 [
   {
@@ -1293,8 +1293,9 @@ Return only a single valid JSON array like this:
   }
 ]
 
-DO NOT return anything outside the array.
+No text before or after the array.
 `.trim();
+
 
 
 
