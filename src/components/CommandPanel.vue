@@ -1182,7 +1182,7 @@ const startReview = async () => {
       headers: {
         'Content-Type': 'application/json',
         Authorization:
-          'Bearer ${import.meta.env.VITE_OPENAI_KEY}'
+          `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -1324,7 +1324,7 @@ No text before or after the array.
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ${import.meta.env.VITE_OPENAI_KEY}' 
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}` 
       },
       body: JSON.stringify({
         model: 'gpt-4',
@@ -1925,7 +1925,7 @@ Respond with: ["tag1", "tag2", "tag3"]`
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ${import.meta.env.VITE_OPENAI_KEY}' 
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}` 
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -2305,7 +2305,7 @@ const restoreRedlinesFromBackup = () => {
   }
 }
 
-// force redeploy
+//force fix
 
 </script>
 <style scoped>
