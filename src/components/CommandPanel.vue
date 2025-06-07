@@ -216,10 +216,14 @@
             <span class="text-xl">
               {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
             </span>
-            @click="highlightClause(r)"
-
-
+            <h3
+              class="font-semibold text-lg cursor-pointer text-blue-700 hover:underline"
+              @click="highlightClause(r)"
+            >
+              {{ r.name }}
+            </h3>
           </div>
+
 
           <div v-if="r.summary" class="mb-2">
             <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
@@ -967,20 +971,17 @@ function highlightClause(clause: any) {
 
   Word.run(async context => {
     const body = context.document.body;
-
     let found = false;
 
     for (const text of candidates) {
       const cleaned = text.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
-
-      // ✅ Proper debug log placement
       console.log('🔍 Trying search for:', cleaned);
 
       const results = body.search(cleaned, {
         matchCase: false,
         matchWholeWord: false,
         ignorePunct: true,
-        ignoreSpace: true
+        ignoreSpace: true,
       });
 
       context.load(results, 'items');
@@ -989,6 +990,12 @@ function highlightClause(clause: any) {
       if (results.items.length > 0) {
         results.items[0].select();
         await context.sync();
+
+        // 🔁 Scroll fallback
+        Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
+          console.log('🧠 Scroll fallback triggered for:', cleaned);
+        });
+
         console.log(`✅ Found match for: ${cleaned}`);
         found = true;
         break;
@@ -1001,7 +1008,7 @@ function highlightClause(clause: any) {
     }
   }).catch(err => {
     console.error('❌ highlightClause error:', err);
-    alert('An error occurred trying to highlight the clause.');
+    alert('An error occurred while scrolling to the clause.');
   });
 }
 
