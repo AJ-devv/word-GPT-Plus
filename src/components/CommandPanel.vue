@@ -967,36 +967,40 @@ function highlightClause(clause: any) {
     clause.summary,
     clause.explanation,
     clause.clauseExample,
-  ].filter(Boolean); // remove undefined/null
+  ].filter(Boolean); // Remove null/undefined
 
   Word.run(async context => {
     const body = context.document.body;
     let found = false;
 
+    console.log('🔍 Starting highlightClause search for:', clause.name);
+    console.log('📄 Word document text preview:', body.text); // Optional full text log
+    console.log('🔎 Candidates:', candidates);
+
     for (const text of candidates) {
       const cleaned = text.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
-      console.log('🔍 Trying search for:', cleaned);
+      console.log('🧪 Trying cleaned search for:', cleaned);
 
       const results = body.search(cleaned, {
         matchCase: false,
         matchWholeWord: false,
         ignorePunct: true,
-        ignoreSpace: true,
+        ignoreSpace: true
       });
 
       context.load(results, 'items');
       await context.sync();
 
       if (results.items.length > 0) {
+        console.log(`✅ Found ${results.items.length} match(es) for: "${cleaned}"`);
         results.items[0].select();
         await context.sync();
 
-        // 🔁 Scroll fallback
+        // Trigger scroll fallback to ensure Word jumps to it
         Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
           console.log('🧠 Scroll fallback triggered for:', cleaned);
         });
 
-        console.log(`✅ Found match for: ${cleaned}`);
         found = true;
         break;
       }
