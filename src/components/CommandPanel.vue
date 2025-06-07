@@ -971,10 +971,15 @@ function highlightClause(clause: any) {
 
   Word.run(async context => {
     const body = context.document.body;
+
+    // ✅ Must load body.text before accessing
+    context.load(body, 'text');
+    await context.sync();
+
     let found = false;
 
     console.log('🔍 Starting highlightClause search for:', clause.name);
-    console.log('📄 Word document text preview:', body.text); // Optional full text log
+    console.log('📄 Word document text preview:', body.text);
     console.log('🔎 Candidates:', candidates);
 
     for (const text of candidates) {
@@ -985,7 +990,7 @@ function highlightClause(clause: any) {
         matchCase: false,
         matchWholeWord: false,
         ignorePunct: true,
-        ignoreSpace: true
+        ignoreSpace: true,
       });
 
       context.load(results, 'items');
@@ -996,7 +1001,7 @@ function highlightClause(clause: any) {
         results.items[0].select();
         await context.sync();
 
-        // Trigger scroll fallback to ensure Word jumps to it
+        // 🔁 Scroll fallback to force jump
         Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
           console.log('🧠 Scroll fallback triggered for:', cleaned);
         });
