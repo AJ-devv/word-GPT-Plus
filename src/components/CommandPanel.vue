@@ -962,45 +962,30 @@ const alertCommand = (cmd: string) => {
 
 
 function highlightClause(clauseText: string) {
-  const cleaned = clauseText.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
-
-  console.log('🧪 highlightClause() triggered');
-  console.log('🧪 Original:', clauseText);
-  console.log('🧪 Cleaned:', cleaned);
+  const bookmarkName = `clause-${clauseText.replace(/\s+/g, '-').toLowerCase()}`;
+  console.log(`🔎 Trying to jump to bookmark: ${bookmarkName}`);
 
   Word.run(async context => {
-    const body = context.document.body;
-    const searchResults = body.search(cleaned, {
-      matchCase: false,
-      matchWholeWord: false,
-      ignorePunct: true,
-      ignoreSpace: true
-    });
-
-    context.load(searchResults, 'items');
+    const bookmarkRange = context.document.getBookmarkRangeOrNullObject(bookmarkName);
+    context.load(bookmarkRange, 'isNullObject');
     await context.sync();
 
-    if (searchResults.items.length > 0) {
-      const range = searchResults.items[0];
-      console.log(`✅ Found ${searchResults.items.length} matches for: ${cleaned}`);
-      range.select("Start");
-context.load(context.document.getSelection(), "text");
-await context.sync();
-
-// Fallback scroll trick for Word UI
-Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
-  // This forces Word to re-focus on the selected range
-});
-
+    if (!bookmarkRange.isNullObject) {
+      bookmarkRange.select();
+      await context.sync();
+      console.log(`✅ Jumped to bookmark: ${bookmarkName}`);
     } else {
-      console.warn(`⚠️ No match for cleaned clause text: ${cleaned}`);
-      alert(`❌ Could not find "${clauseText}" in the document.`);
+      console.warn(`⚠️ Bookmark not found: ${bookmarkName}`);
+      alert(`❌ Could not find section for "${clauseText}" in the document.`);
     }
   }).catch(err => {
     console.error('❌ highlightClause error:', err);
-    alert('An error occurred trying to find and scroll to the clause in Word.');
+    alert('An error occurred while jumping to the clause in Word.');
   });
 }
+
+
+
 
 
 
