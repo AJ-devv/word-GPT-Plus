@@ -224,9 +224,13 @@
             </h3>
           </div>
 
-
           <div v-if="r.summary" class="mb-2">
             <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
+          </div>
+
+          <!-- ✅ NEW: Show actual quoted text from document -->
+          <div v-if="r.originalText" class="mb-2">
+            <p class="text-sm text-gray-600 italic whitespace-pre-wrap">{{ r.originalText }}</p>
           </div>
 
           <div v-if="r.explanation" class="mb-2">
@@ -243,7 +247,6 @@
               class="px-3 py-1 rounded text-sm border border-green-600 text-green-700 hover:bg-green-50"
               :disabled="ruleReviewMap[r.name] === 'applied'"
               @click="applyRedline(r)"
-
             >
               ✅ Apply
             </button>
@@ -259,6 +262,7 @@
         </li>
       </ul>
     </div>
+
 
 
    
@@ -963,29 +967,24 @@ const alertCommand = (cmd: string) => {
 
 function highlightClause(clause: any) {
   const candidates = [
-    clause.quote,
+    clause.originalText,
     clause.name,
     clause.summary,
     clause.explanation,
     clause.clauseExample,
-  ].filter(Boolean); // Remove null/undefined
+  ].filter(Boolean);
+
+  console.log('📌 Starting highlightClause search for:', clause.name);
+  console.log('📄 Word document text preview:', selectedText.value || '[not loaded]');
+  console.log('🧠 Candidates:', candidates);
 
   Word.run(async context => {
     const body = context.document.body;
-
-    // ✅ Must load body.text before accessing
-    context.load(body, 'text');
-    await context.sync();
-
     let found = false;
-
-    console.log('🔍 Starting highlightClause search for:', clause.name);
-    console.log('📄 Word document text preview:', body.text);
-    console.log('🔎 Candidates:', candidates);
 
     for (const text of candidates) {
       const cleaned = text.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
-      console.log('🧪 Trying cleaned search for:', cleaned);
+      console.log('🔍 Trying cleaned search for:', cleaned);
 
       const results = body.search(cleaned, {
         matchCase: false,
@@ -998,15 +997,10 @@ function highlightClause(clause: any) {
       await context.sync();
 
       if (results.items.length > 0) {
-        console.log(`✅ Found ${results.items.length} match(es) for: "${cleaned}"`);
         results.items[0].select();
         await context.sync();
 
-        // 🔁 Scroll fallback to force jump
-        Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
-          console.log('🧠 Scroll fallback triggered for:', cleaned);
-        });
-
+        console.log(`✅ Found and selected clause: ${cleaned}`);
         found = true;
         break;
       }
@@ -1014,11 +1008,11 @@ function highlightClause(clause: any) {
 
     if (!found) {
       console.warn(`❌ No match found in Word for: ${clause.name}`);
-      alert(`Could not locate "${clause.name}" in the document.`);
+      console.log('🧠 Candidates tried:', candidates);
+      console.log('📄 Word body text (truncated):', body.text?.slice(0, 500));
     }
   }).catch(err => {
     console.error('❌ highlightClause error:', err);
-    alert('An error occurred while scrolling to the clause.');
   });
 }
 
@@ -1272,29 +1266,30 @@ Your tasks:
 3. Identify contradictions or clauses that work against that goal
 4. Flag missing or risky provisions
 5. Return at least 3 clause evaluations, even if they are all compliant or standard.
-6. For each clause, provide:
-   - name
+6. For each clause, return:
+   - name: a short label
    - status: "compliant", "issue", or "review"
    - summary: what the clause says
    - explanation: how it supports or harms the goal
-   - redline: if improvement is needed
-   - quote: the actual clause text (as it appears in the contract) that GPT evaluated
+   - redline: suggested revision (if any)
+   - originalText: the full clause text exactly as it appears in the contract (copy-paste, no paraphrasing)
 
-Return only a valid JSON array like this:
+Return only a single valid JSON array like this:
 
 [
   {
     "name": "Confidentiality",
     "status": "compliant",
-    "summary": "The agreement includes a confidentiality clause.",
-    "explanation": "It protects sensitive information.",
-    "quote": "Each party agrees to keep confidential all proprietary information disclosed during the term of this Agreement.",
+    "summary": "This clause requires both parties to keep proprietary information confidential.",
+    "explanation": "This protects trade secrets and sensitive data.",
+    "originalText": "Each party agrees to keep confidential all proprietary information disclosed during the term of this Agreement.",
     "redline": ""
   }
 ]
 
-No comments or text outside the array.
-`.trim()
+DO NOT return anything outside the array.
+`.trim();
+
 
 
 
@@ -1369,8 +1364,10 @@ const named = parsedAll.map((r: any) => ({
   status: r.status || 'review',
   summary: r.summary || '',
   explanation: r.explanation || '',
-  redline: r.redline || ''
-}))
+  redline: r.redline || '',
+  originalText: r.originalText || r.quote || ''
+}));
+
 
     structuredGeneralResults.value = named
     named.forEach(r => {
