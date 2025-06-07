@@ -976,7 +976,9 @@ function highlightClause(clauseText: string) {
 
     if (searchResults.items.length > 0) {
       console.log(`✅ Found ${searchResults.items.length} matches for: ${cleaned}`);
-      searchResults.items[0].select();
+      const range = searchResults.items[0];
+      range.select();                             // ✅ Select the match
+      await context.sync();                       // ✅ Ensure scroll takes effect
     } else {
       console.warn(`⚠️ No match for cleaned clause text: ${cleaned}`);
       alert(`❌ Could not find "${clauseText}" in the document.`);
@@ -986,6 +988,10 @@ function highlightClause(clauseText: string) {
     alert('An error occurred trying to find and scroll to the clause in Word.');
   });
 }
+
+
+
+
 
 
 
