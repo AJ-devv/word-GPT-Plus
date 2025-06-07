@@ -1203,6 +1203,25 @@ const startReview = async () => {
   }
 }
 
+
+function extractBestMatchFromText(name: string, summary: string, explanation: string, text: string): string {
+  const candidates = [name, summary, explanation]
+    .map(x => x?.toLowerCase().replace(/[^a-z0-9 ]/gi, '').trim())
+    .filter(Boolean)
+
+  const lines = text.split('\n').map(line => line.trim())
+  for (const candidate of candidates) {
+    const match = lines.find(line =>
+      line.toLowerCase().replace(/[^a-z0-9 ]/gi, '').includes(candidate) &&
+      line.length > 20
+    )
+    if (match) return match
+  }
+  return ''
+}
+
+
+
 const startGeneralReview = async () => {
   reviewLoading.value = true
 
@@ -1323,29 +1342,11 @@ No text before or after the array.
     })
 
 const data = await res.json()
-const raw = data.choices?.[0]?.message?.content || JSON.stringify([
-  {
-    name: "Confidentiality",
-    status: "compliant",
-    summary: "This agreement includes a standard confidentiality clause.",
-    explanation: "It covers the protection of proprietary information.",
-    redline: ""
-  },
-  {
-    name: "Governing Law",
-    status: "issue",
-    summary: "The agreement does not specify a governing law.",
-    explanation: "This is essential for resolving disputes.",
-    redline: "Consider adding a clause specifying jurisdiction."
-  },
-  {
-    name: "Severability",
-    status: "compliant",
-    summary: "The contract includes a severability clause.",
-    explanation: "It allows valid portions to remain enforceable.",
-    redline: ""
-  }
-])
+const raw = data.choices?.[0]?.message?.content
+
+if (!raw || raw.trim().length < 10) {
+  throw new Error('❌ GPT response was empty or invalid.')
+}
 
 // ✅ Log to console
 console.log('🧾 General GPT Response:', raw)
@@ -1372,15 +1373,16 @@ const named = parsedAll.map((r: any) => ({
   summary: r.summary || '',
   explanation: r.explanation || '',
   redline: r.redline || '',
-  originalText:
+originalText:
   r.originalText?.trim() ||
   r.quote?.trim() ||
-  contractText
-    .split('\n')
-    .find(line =>
-      line.toLowerCase().includes((r.name || '').toLowerCase())
-    )?.trim() ||
-  ''
+  extractBestMatchFromText(
+    r.name || '',
+    r.summary || '',
+    r.explanation || '',
+    contractText
+  )
+
 }));
 
 
