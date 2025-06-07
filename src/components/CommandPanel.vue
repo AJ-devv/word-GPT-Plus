@@ -983,8 +983,9 @@ function highlightClause(clauseText: string) {
     if (searchResults.items.length > 0) {
       const range = searchResults.items[0];
       console.log(`✅ Found ${searchResults.items.length} matches for: ${cleaned}`);
-      range.select(Word.SelectionMode.select); // <- already scrolls if not in view
-      await context.sync(); // Ensure selection triggers scroll
+      range.select(); // ✅ Select the clause
+      context.document.getSelection().load("text"); // ✅ Load something from selection
+      await context.sync(); // ✅ Force scroll into view
     } else {
       console.warn(`⚠️ No match for cleaned clause text: ${cleaned}`);
       alert(`❌ Could not find "${clauseText}" in the document.`);
@@ -994,6 +995,7 @@ function highlightClause(clauseText: string) {
     alert('An error occurred trying to find and scroll to the clause in Word.');
   });
 }
+
 
 
 
