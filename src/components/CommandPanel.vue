@@ -983,9 +983,15 @@ function highlightClause(clauseText: string) {
     if (searchResults.items.length > 0) {
       const range = searchResults.items[0];
       console.log(`✅ Found ${searchResults.items.length} matches for: ${cleaned}`);
-      range.select(); // ✅ Select the clause
-      context.document.getSelection().load("text"); // ✅ Load something from selection
-      await context.sync(); // ✅ Force scroll into view
+      range.select("Start");
+context.load(context.document.getSelection(), "text");
+await context.sync();
+
+// Fallback scroll trick for Word UI
+Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
+  // This forces Word to re-focus on the selected range
+});
+
     } else {
       console.warn(`⚠️ No match for cleaned clause text: ${cleaned}`);
       alert(`❌ Could not find "${clauseText}" in the document.`);
