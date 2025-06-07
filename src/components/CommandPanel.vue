@@ -605,7 +605,13 @@
                             : '⚠️'
                       }}
                     </span>
-                    <h3 class="font-semibold text-lg">{{ r.name }}</h3>
+                    <h3
+                      class="font-semibold text-lg cursor-pointer text-blue-700 hover:underline"
+                      @click="highlightClause(r.summary || r.name)" 
+                    >
+                      {{ r.name }}
+                    </h3>
+
                     <span
                       v-if="ruleReviewMap[r.name] === 'applied'"
                       title="Applied"
