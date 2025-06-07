@@ -962,27 +962,51 @@ const alertCommand = (cmd: string) => {
 
 
 function highlightClause(clauseText: string) {
-  const bookmarkName = `clause-${clauseText.replace(/\s+/g, '-').toLowerCase()}`;
-  console.log(`🔎 Trying to jump to bookmark: ${bookmarkName}`);
+  const cleaned = clauseText.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
+
+  console.log('🧪 highlightClause() triggered');
+  console.log('🧪 Original:', clauseText);
+  console.log('🧪 Cleaned:', cleaned);
 
   Word.run(async context => {
-    const bookmarkRange = context.document.getBookmarkRangeOrNullObject(bookmarkName);
-    context.load(bookmarkRange, 'isNullObject');
+    const body = context.document.body;
+    const searchResults = body.search(cleaned, {
+      matchCase: false,
+      matchWholeWord: false,
+      ignorePunct: true,
+      ignoreSpace: true
+    });
+
+    context.load(searchResults, 'items');
     await context.sync();
 
-    if (!bookmarkRange.isNullObject) {
-      bookmarkRange.select();
+    if (searchResults.items.length > 0) {
+      const range = searchResults.items[0];
+      console.log(`✅ Found ${searchResults.items.length} matches for: ${cleaned}`);
+
+      // ✅ Select the range (this scrolls to it)
+      range.select("Start");
       await context.sync();
-      console.log(`✅ Jumped to bookmark: ${bookmarkName}`);
+
+      // ✅ Force scroll fallback (this ensures it’s scrolled into view)
+      Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
+        console.log('🧠 Fallback scroll triggered');
+      });
+
     } else {
-      console.warn(`⚠️ Bookmark not found: ${bookmarkName}`);
-      alert(`❌ Could not find section for "${clauseText}" in the document.`);
+      console.warn(`⚠️ No match for cleaned clause text: ${cleaned}`);
+      alert(`❌ Could not find "${clauseText}" in the document.`);
     }
+
   }).catch(err => {
     console.error('❌ highlightClause error:', err);
-    alert('An error occurred while jumping to the clause in Word.');
+    alert('An error occurred trying to scroll to the clause in Word.');
   });
 }
+
+
+
+
 
 
 
