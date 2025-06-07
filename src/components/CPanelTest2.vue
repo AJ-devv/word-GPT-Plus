@@ -800,8 +800,7 @@ import {
 import DOMPurify from 'dompurify'
 
 
- const openaiKey =
-  import.meta.env?.VITE_OPENAI_KEY || process.env?.VUE_APP_OPENAI_API_KEY
+
 
 const showActions = ref(false)
 
@@ -1079,21 +1078,18 @@ async function sendMessage() {
   loading.value = true
   chatResponse.value = ''
 
-
-
-const res = await fetch('https://api.openai.com/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${openaiKey}`
-  },
-  body: JSON.stringify({
-    model: 'gpt-4',
-    messages: [{ role: 'user', content: chatMessage.value }],
-    temperature: 0.4
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: chatMessage.value }],
+      temperature: 0.4
+    })
   })
-})
-
 
   const data = await res.json()
   chatResponse.value = data.choices?.[0]?.message?.content || 'No response received.'
@@ -1111,7 +1107,7 @@ async function runAction(action: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-       Authorization: `Bearer ${openaiKey}`
+       Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
     },
     body: JSON.stringify({
       model: 'gpt-4',
@@ -1186,7 +1182,7 @@ const startReview = async () => {
       headers: {
         'Content-Type': 'application/json',
         Authorization:
-          `Bearer ${openaiKey}`
+          'Bearer ${import.meta.env.VITE_OPENAI_KEY}'
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -1328,7 +1324,7 @@ No text before or after the array.
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${openaiKey}` 
+        Authorization: 'Bearer ${import.meta.env.VITE_OPENAI_KEY}' 
       },
       body: JSON.stringify({
         model: 'gpt-4',
@@ -1929,7 +1925,7 @@ Respond with: ["tag1", "tag2", "tag3"]`
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${openaiKey}` 
+        Authorization: 'Bearer ${import.meta.env.VITE_OPENAI_KEY}' 
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -2182,7 +2178,7 @@ DO NOT return any commentary or multiple arrays.
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-         Authorization: `Bearer ${openaiKey}`
+         Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-4',
@@ -2309,8 +2305,6 @@ const restoreRedlinesFromBackup = () => {
   }
 }
 
-// Added something
-// GPT prompt updated 06-06-25
 
 
 </script>
