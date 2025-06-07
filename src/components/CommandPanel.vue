@@ -216,12 +216,8 @@
             <span class="text-xl">
               {{ r.status === 'compliant' ? '✅' : r.status === 'issue' ? '❌' : '⚠️' }}
             </span>
-            <h3
-              class="font-semibold text-lg cursor-pointer text-blue-700 hover:underline"
-              @click="highlightClause(r.summary || r.name)"
-            >
-              {{ r.name }}
-            </h3>
+            @click="highlightClause(r)"
+
 
           </div>
 
@@ -961,48 +957,54 @@ const alertCommand = (cmd: string) => {
 }
 
 
-function highlightClause(clauseText: string) {
-  const cleaned = clauseText.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
-
-  console.log('🧪 highlightClause() triggered');
-  console.log('🧪 Original:', clauseText);
-  console.log('🧪 Cleaned:', cleaned);
+function highlightClause(clause: any) {
+  const candidates = [
+    clause.name,
+    clause.summary,
+    clause.explanation,
+    clause.clauseExample,
+  ].filter(Boolean); // remove undefined/null
 
   Word.run(async context => {
     const body = context.document.body;
-    const searchResults = body.search(cleaned, {
-      matchCase: false,
-      matchWholeWord: false,
-      ignorePunct: true,
-      ignoreSpace: true
-    });
 
-    context.load(searchResults, 'items');
-    await context.sync();
+    let found = false;
 
-    if (searchResults.items.length > 0) {
-      const range = searchResults.items[0];
-      console.log(`✅ Found ${searchResults.items.length} matches for: ${cleaned}`);
+    for (const text of candidates) {
+      const cleaned = text.replace(/^[\d.]+\s*/, '').trim().toLowerCase();
 
-      // ✅ Select the range (this scrolls to it)
-      range.select("Start");
-      await context.sync();
+      // ✅ Proper debug log placement
+      console.log('🔍 Trying search for:', cleaned);
 
-      // ✅ Force scroll fallback (this ensures it’s scrolled into view)
-      Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, () => {
-        console.log('🧠 Fallback scroll triggered');
+      const results = body.search(cleaned, {
+        matchCase: false,
+        matchWholeWord: false,
+        ignorePunct: true,
+        ignoreSpace: true
       });
 
-    } else {
-      console.warn(`⚠️ No match for cleaned clause text: ${cleaned}`);
-      alert(`❌ Could not find "${clauseText}" in the document.`);
+      context.load(results, 'items');
+      await context.sync();
+
+      if (results.items.length > 0) {
+        results.items[0].select();
+        await context.sync();
+        console.log(`✅ Found match for: ${cleaned}`);
+        found = true;
+        break;
+      }
     }
 
+    if (!found) {
+      console.warn(`❌ No match found in Word for: ${clause.name}`);
+      alert(`Could not locate "${clause.name}" in the document.`);
+    }
   }).catch(err => {
     console.error('❌ highlightClause error:', err);
-    alert('An error occurred trying to scroll to the clause in Word.');
+    alert('An error occurred trying to highlight the clause.');
   });
 }
+
 
 
 
