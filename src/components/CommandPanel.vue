@@ -1082,7 +1082,7 @@ async function sendMessage() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ${import.meta.env.VITE_OPENAI_KEY}'
+      Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
     },
     body: JSON.stringify({
       model: 'gpt-4',
@@ -1107,7 +1107,7 @@ async function runAction(action: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ${import.meta.env.VITE_OPENAI_KEY}'
+       Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
     },
     body: JSON.stringify({
       model: 'gpt-4',
@@ -2178,7 +2178,7 @@ DO NOT return any commentary or multiple arrays.
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ${import.meta.env.VITE_OPENAI_KEY}'
+         Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-4',
