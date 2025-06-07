@@ -963,6 +963,7 @@ const alertCommand = (cmd: string) => {
 
 function highlightClause(clause: any) {
   const candidates = [
+    clause.quote,
     clause.name,
     clause.summary,
     clause.explanation,
@@ -1277,6 +1278,7 @@ Your tasks:
    - summary: what the clause says
    - explanation: how it supports or harms the goal
    - redline: if improvement is needed
+   - quote: the actual clause text (as it appears in the contract) that GPT evaluated
 
 Return only a valid JSON array like this:
 
@@ -1286,13 +1288,14 @@ Return only a valid JSON array like this:
     "status": "compliant",
     "summary": "The agreement includes a confidentiality clause.",
     "explanation": "It protects sensitive information.",
+    "quote": "Each party agrees to keep confidential all proprietary information disclosed during the term of this Agreement.",
     "redline": ""
-  },
-  ...
+  }
 ]
 
-No comments or notes outside the array.
+No comments or text outside the array.
 `.trim()
+
 
 
   try {
