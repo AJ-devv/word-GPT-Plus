@@ -228,6 +228,12 @@
             <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
           </div>
 
+          <div v-if="r.summary" class="mb-2">
+            <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ r.summary }}</p>
+          </div>
+          <!-- 👇 Insert quote block here -->
+
+
           <!-- ✅ NEW: Show actual quoted text from document -->
           <div v-if="r.originalText" class="mb-2">
             <p class="text-sm text-gray-600 italic whitespace-pre-wrap">{{ r.originalText }}</p>
@@ -1365,7 +1371,15 @@ const named = parsedAll.map((r: any) => ({
   summary: r.summary || '',
   explanation: r.explanation || '',
   redline: r.redline || '',
-  originalText: r.originalText || r.quote || ''
+  originalText:
+  r.originalText?.trim() ||
+  r.quote?.trim() ||
+  contractText
+    .split('\n')
+    .find(line =>
+      line.toLowerCase().includes((r.name || '').toLowerCase())
+    )?.trim() ||
+  ''
 }));
 
 
