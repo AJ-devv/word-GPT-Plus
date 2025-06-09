@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "serve": "vite",
-    "build": "vue-cli-service build --no-eslint",
+    "build": "vite build",
     "lint": "vue-cli-service lint --fix",
     "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
     "cz": "git-cz",
