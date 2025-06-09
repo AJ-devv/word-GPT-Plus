@@ -899,6 +899,15 @@ const loadCustomPlaybooksFromFirebase = async () => {
 }
 
 
+Office.onReady().then(info => {
+  if (info.host === Office.HostType.Word) {
+    console.log('✅ Office.js is fully loaded and running in Word.');
+  } else {
+    console.warn('⚠️ Office.js loaded but not inside Word. Host:', info.host);
+  }
+});
+
+
 // Inject from Firebase
 onMounted(() => {
   loadPlaybooksFromFirebase()
