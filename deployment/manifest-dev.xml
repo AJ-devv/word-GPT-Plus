@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:type="TaskPaneApp">
+
+  <Id>1e5432f0-f1e1-4b34-9e88-abc123456789</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Word GPT Plus Dev</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="Word GPT Plus (Dev)" />
+  <Description DefaultValue="Run your local GPT assistant for contract review in Word." />
+
+  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
+  <SupportUrl DefaultValue="https://localhost:3000/" />
+
+  <AppDomains>
+    <AppDomain>https://localhost:3000</AppDomain>
+  </AppDomains>
+
+  <Hosts>
+    <Host Name="Document" />
+  </Hosts>
+
+  <!-- ✅ Updated: remove /index.html -->
+  <Resources>
+    <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/" />
+  </Resources>
+
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://localhost:3000/" />
+  </DefaultSettings>
+
+  <Permissions>ReadWriteDocument</Permissions>
+</OfficeApp>

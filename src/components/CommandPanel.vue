@@ -106,6 +106,11 @@
     <section v-if="currentTab === 'review'">
       <h2>AI Contract Review</h2>
 
+      <!-- ✅ LOCAL DEV VERSION INDICATOR -->
+      <div class="text-sm text-green-700 bg-green-100 border border-green-400 p-2 rounded mb-3">
+        ✅ Running local development version - {{ new Date().toLocaleDateString() }}
+      </div>
+
       <!-- Manual Review Form (Only show if no results yet) -->
       <div v-if="!playbookResults.length && !structuredGeneralResults.length" class="review-form">
         <label>What type of contract is this?</label>
@@ -125,6 +130,18 @@
             {{ reviewLoading ? 'Analyzing...' : 'Start General Review' }}
           </button>
         </div>
+
+        <!-- ✅ Contract Preview Block -->
+        <div v-if="debugLog" class="text-xs text-gray-600 mt-4">
+          <strong>Contract Preview (first 600 characters):</strong>
+          <pre class="bg-gray-50 border border-gray-300 p-2 rounded whitespace-pre-wrap max-h-40 overflow-y-auto">
+{{ debugLog.slice(0, 600) }}
+  </pre>
+        </div>
+
+
+
+
 
         <!-- ✅ Debug Output for Contract Text / Errors -->
         <div v-if="debugLog" style="margin-top: 20px; font-size: 11px; color: #666;">
@@ -800,8 +817,9 @@ import {
 import DOMPurify from 'dompurify'
 
 
- const openaiKey =
-  import.meta.env?.VITE_OPENAI_KEY || process.env?.VUE_APP_OPENAI_API_KEY
+const openaiKey = import.meta.env.VITE_OPENAI_KEY
+
+
 
 const showActions = ref(false)
 
@@ -1226,194 +1244,7 @@ function extractBestMatchFromText(name: string, summary: string, explanation: st
 
 
 
-const startGeneralReview = async () => {
-  reviewLoading.value = true
 
-  const type = contractType.value.trim() || 'unspecified'
-  const concerns = reviewConcerns.value.trim() || 'general enforceability and completeness'
-
-  // 🧪 Temporary fallback for dev testing (remove when live)
-  let contractText = `
-THIS NON-DISCLOSURE AGREEMENT (the “Agreement”) is made between Party A and Party B for the purpose of preventing the unauthorized disclosure of confidential information. The parties agree not to disclose confidential information unless required by law.
-`.trim()
-
-  // ✅ Production: Try to read real contract from Word (when sideloaded)
-try {
-  // Try using Word.run API
-  const result = await Word.run(async context => {
-    const body = context.document.body
-    context.load(body, 'text')
-    await context.sync()
-    return body.text
-  })
-
-  if (result && result.length > 30) {
-    contractText = result
-    console.log('📄 Word.run contract text:', contractText)
-    debugLog.value = '📄 Word.run contract text:\n' + contractText
-  } else {
-    console.warn('⚠️ Word.run returned insufficient or empty text.')
-    debugLog.value = '⚠️ Word.run returned insufficient or empty text.'
-  }
-} catch (err) {
-  console.warn('⚠️ Word.run failed, attempting Office.context fallback:', err)
-  debugLog.value = '⚠️ Word.run failed, trying fallback.\n' + (err as Error).message
-
-  // Fallback using Office.context.document.body.getAsync
-  await new Promise<void>((resolve) => {
-    ;(Office.context.document as any).body.getAsync("text", (result: any) => {
-      if (result.status === Office.AsyncResultStatus.Succeeded) {
-        contractText = result.value
-        console.log('📄 Office.context contract text (fallback):', contractText)
-        debugLog.value = '📄 Office.context contract text (fallback):\n' + contractText
-      } else {
-        console.error('❌ Could not retrieve Word document text:', result.error)
-        debugLog.value = '❌ Error retrieving Word text:\n' + result.error?.message || 'Unknown error'
-      }
-      resolve()
-    })
-  })
-}
-
-
-
-const prompt = `
-You are a legal contract reviewer AI. The user uploaded the following contract:
-
-"""
-${contractText}
-"""
-
-They believe it is a "${type}". If this is incorrect, infer the correct contract type.
-They are concerned about "${concerns}".
-
-Your tasks:
-1. Detect and classify the contract type (e.g., NDA, lease, employment)
-2. Intuit the user’s likely legal goal
-3. Identify contradictions or clauses that work against that goal
-4. Flag missing or risky provisions
-5. Return at least 3 clause evaluations, even if they are all compliant or standard.
-6. For each clause, return:
-   - name: a short label
-   - status: "compliant", "issue", or "review"
-   - summary: what the clause says in plain English
-   - explanation: how it supports or harms the goal
-   - redline: suggested revision (if needed)
-   - originalText: the exact quote of the clause as it appears in the contract. No paraphrasing. Copy it verbatim.
-
-DO NOT paraphrase in originalText. If you can't find a quote, return "".
-
-Return only one valid JSON array like this:
-
-[
-  {
-    "name": "Confidentiality",
-    "status": "compliant",
-    "summary": "This clause requires both parties to keep proprietary information confidential.",
-    "explanation": "This protects trade secrets and sensitive data.",
-    "originalText": "Each party agrees to keep confidential all proprietary information disclosed during the term of this Agreement.",
-    "redline": ""
-  }
-]
-
-No text before or after the array.
-`.trim();
-
-
-
-
-
-  try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${openaiKey}` 
-      },
-      body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a senior legal reviewer. Return only one valid JSON array, no explanations or extra text.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
-      })
-    })
-
-const data = await res.json()
-const raw = data.choices?.[0]?.message?.content
-
-if (!raw || raw.trim().length < 10) {
-  throw new Error('❌ GPT response was empty or invalid.')
-}
-
-// ✅ Log to console
-console.log('🧾 General GPT Response:', raw)
-
-// ✅ Append to in-app debug panel
-debugLog.value += '\n\n🧾 GPT Response:\n' + raw
-debugLog.value += '\n⏳ Attempting to parse GPT JSON output...'
-
-let parsedAll: any[] = []
-try {
-  // Clean up formatting artifacts, if any
-  const fixedRaw = raw.replace(/]\s*\[/g, ',')
-  parsedAll = JSON.parse(fixedRaw)
-  debugLog.value += '\n✅ JSON parsed successfully.'
-} catch (err) {
-  debugLog.value += '\n❌ Failed to parse GPT JSON:\n' + (err as Error).message
-  throw new Error(`❌ GPT response was not valid JSON:\n${raw}`)
-}
-
-// ✅ Normalize the parsed objects
-const named = parsedAll.map((r: any) => ({
-  name: r.name || r.ruleName || 'Unnamed Clause',
-  status: r.status || 'review',
-  summary: r.summary || '',
-  explanation: r.explanation || '',
-  redline: r.redline || '',
-originalText:
-  r.originalText?.trim() ||
-  r.quote?.trim() ||
-  extractBestMatchFromText(
-    r.name || '',
-    r.summary || '',
-    r.explanation || '',
-    contractText
-  )
-
-}));
-
-
-    structuredGeneralResults.value = named
-    named.forEach(r => {
-      originalRedlines[r.name] = r.redline || ''
-      ruleReviewMap[r.name] = '' // ✅ reset Apply/Ignore state for General Review
-    })
-
-    currentTab.value = 'review'
-    showPlaybookResults.value = true
-  } catch (err) {
-    console.error('❌ General Review Error:', err)
-    playbookResults.value = [
-      {
-        name: 'General Review Error',
-        status: 'issue',
-        summary: 'The AI could not parse its output.',
-        explanation: typeof err === 'string' ? err : (err as Error).message || 'Unknown error'
-      }
-    ]
-    currentTab.value = 'review'
-    showPlaybookResults.value = true
-  } finally {
-    reviewLoading.value = false
-  }
-}
 
 
 const updatePlaybook = async () => {
@@ -1523,6 +1354,202 @@ const ruleReviewMap = reactive<Record<string, 'applied' | 'ignored' | ''>>({})
 const redlineEditMode = reactive<Record<string, boolean>>({})
 const originalRedlines = reactive<Record<string, string>>({})
 const debugLog = ref('')
+
+const compliantCount = computed(
+  () => playbookResults.value.filter(r => r.status === 'compliant').length
+)
+
+const issueCount = computed(
+  () => playbookResults.value.filter(r => r.status === 'issue').length
+)
+
+const reviewCount = computed(
+  () => playbookResults.value.filter(r => r.status === 'review').length
+)
+
+const totalResults = computed(() => playbookResults.value.length)
+
+
+const startGeneralReview = async () => {
+  // ✅ Office.js + Word readiness check
+  if (typeof window.Office === 'undefined' || typeof Word === 'undefined' || !Word.run) {
+    alert('⚠️ Office.js is not fully loaded yet. Please wait a few seconds and try again.')
+    debugLog.value = '🛑 Office.js or Word.run not ready at time of startGeneralReview.'
+    return
+  }
+
+  if (!Office.context || !Office.context.document) {
+    alert('⚠️ Office context not yet initialized. Please try again in a moment.')
+    debugLog.value = '🛑 Office.context.document is not available.'
+    return
+  }
+
+  console.log('✅ Word.run and Office.context.document are available.')
+
+  reviewLoading.value = true
+  structuredGeneralResults.value = []
+  showPlaybookResults.value = false
+
+  const type = contractType.value.trim() || 'unspecified'
+  const concerns = reviewConcerns.value.trim() || 'general enforceability and completeness'
+
+  if (!type || type.length < 2) {
+    alert('⚠️ Please enter a contract type, even if it’s just "NDA" or "unknown".')
+    reviewLoading.value = false
+    return
+  }
+
+  let contractText = ''
+
+  try {
+    const result = await Word.run(async context => {
+      const body = context.document.body
+      context.load(body, 'text')
+      await context.sync()
+      const len = body.text?.length || 0
+      console.log(`📏 Word.run body.text length: ${len}`)
+      return body.text
+    })
+
+    contractText = result || ''
+    debugLog.value = '📄 Word.run contract text:\n' + contractText
+  } catch (err) {
+    debugLog.value = '⚠️ Word.run failed, trying fallback.\n' + (err as Error).message
+
+    await new Promise<void>((resolve) => {
+      ;(Office.context.document as any).body.getAsync('text', (result: any) => {
+        const rawText = result?.value || ''
+        const safeText = rawText.replace(/\s+/g, '').trim()
+
+        console.log(`📏 Fallback Office.context text length: ${safeText.length}`)
+
+        if (result.status === Office.AsyncResultStatus.Succeeded && safeText.length >= 30) {
+          contractText = rawText
+          debugLog.value += '\n📄 Office.context fallback text:\n' + rawText
+        } else {
+          contractText = ''
+          debugLog.value += '\n🛑 Office.context fallback returned empty or meaningless text.'
+        }
+
+        resolve()
+      })
+    })
+  }
+
+  // ✂️ Truncate if too long
+  if (contractText.length > 12000) {
+    contractText = contractText.slice(0, 12000) + '\n\n[...TRUNCATED FOR LENGTH]'
+    debugLog.value += '\n✂️ Contract was truncated to 12,000 characters.'
+  }
+
+  debugLog.value += '\n📌 Preview:\nType: ' + type + '\nLength: ' + contractText.length + ' characters\n---\n'
+  debugLog.value += contractText.slice(0, 500) + '...'
+  debugLog.value += `\n🧪 Final contractText length: ${contractText.length}`
+
+  // ✅ Final contract text check before GPT
+  const safeText = contractText?.replace(/\s+/g, '').trim() || ''
+  if (!safeText || safeText.length < 30) {
+    alert('⚠️ The contract appears empty or too short to analyze.')
+    reviewLoading.value = false
+    debugLog.value += '\n⚠️ GPT was not run because document was empty.\n'
+    return
+  }
+
+  try {
+    const prompt = `
+You are a legal contract reviewer AI. The user uploaded the following contract:
+
+"""
+${contractText}
+"""
+
+They believe it is a "${type}". If this is incorrect, infer the correct contract type.
+They are concerned about "${concerns}".
+
+If the contract appears empty, mostly boilerplate, or nonsense, respond with exactly: []
+Do NOT attempt to identify contract type or clauses if the input lacks meaningful content.
+
+Your tasks:
+1. Detect and classify the contract type (e.g., NDA, lease, employment)
+2. Intuit the user’s likely legal goal
+3. Identify contradictions or clauses that work against that goal
+4. Flag missing or risky provisions
+5. Return at least 3 clause evaluations, even if they are all compliant or standard.
+6. For each clause, return:
+   - name, status, summary, explanation, redline, originalText
+
+DO NOT paraphrase in originalText. Return only one valid JSON array. No text before or after the array.
+    `.trim()
+
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${openaiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a senior legal reviewer. Return only one valid JSON array, no explanations.'
+          },
+          { role: 'user', content: prompt }
+        ]
+      })
+    })
+
+    const data = await res.json()
+    const raw = data.choices?.[0]?.message?.content || ''
+    debugLog.value += '\n🧾 GPT Response:\n' + raw
+
+    const fixedRaw = raw.replace(/]\s*\[/g, ',')
+    const parsed = JSON.parse(fixedRaw)
+
+    if (!Array.isArray(parsed)) throw new Error('Invalid JSON array.')
+
+    const named = parsed.map((r: any) => ({
+      name: r.name || 'Unnamed Clause',
+      status: r.status || 'review',
+      summary: r.summary || '',
+      explanation: r.explanation || '',
+      redline: r.redline || '',
+      originalText:
+        r.originalText?.trim() ||
+        extractBestMatchFromText(
+          r.name || '',
+          r.summary || '',
+          r.explanation || '',
+          contractText
+        )
+    }))
+
+    structuredGeneralResults.value = named
+    named.forEach(r => {
+      originalRedlines[r.name] = r.redline || ''
+      ruleReviewMap[r.name] = ''
+    })
+
+    currentTab.value = 'review'
+    showPlaybookResults.value = true
+  } catch (err) {
+    console.error('❌ GPT Error:', err)
+    playbookResults.value = [
+      {
+        name: 'General Review Error',
+        status: 'issue',
+        summary: 'The AI could not parse its output.',
+        explanation: (err as Error).message || 'Unknown error'
+      }
+    ]
+    currentTab.value = 'review'
+    showPlaybookResults.value = true
+  } finally {
+    reviewLoading.value = false
+  }
+}
+
+
 
 
 
@@ -2035,19 +2062,7 @@ const removeRule = async (index: number) => {
   await syncRulesToFirebase()
 }
 
-const compliantCount = computed(
-  () => playbookResults.value.filter(r => r.status === 'compliant').length
-)
 
-const issueCount = computed(
-  () => playbookResults.value.filter(r => r.status === 'issue').length
-)
-
-const reviewCount = computed(
-  () => playbookResults.value.filter(r => r.status === 'review').length
-)
-
-const totalResults = computed(() => playbookResults.value.length)
 
 const hasEnabledRules = computed(() => {
   if (!selectedPlaybook.value) return false

@@ -3,15 +3,17 @@
   "version": "0.4.12",
   "private": true,
   "scripts": {
-    "dev": "vue-cli-service serve --port 3000",
-    "serve": "vue-cli-service serve --port 3000",
+    "dev": "vite",
+    "serve": "vite",
     "build": "vue-cli-service build --no-eslint",
     "lint": "vue-cli-service lint --fix",
     "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/",
     "cz": "git-cz",
     "release": "bump-version",
     "lint:dpdm": "dpdm -T --tsconfig ./tsconfig.json --no-tree --no-warning --exit-code circular:1 src/main.ts",
-    "vite-dev": "vite"
+    "vite-dev": "vite",
+    "sideload:dev": "npx office-addin-debugging start ./deployment/manifest-dev.xml --app Word",
+    "sideload:prod": "npx office-addin-debugging start ./deployment/manifest-prod.xml --app Word"
   },
   "dependencies": {
     "@azure/openai": "1.0.0-beta.4",
@@ -38,11 +40,6 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-vue": "^5.2.4",
-    "@vue/cli-plugin-babel": "^5.0.8",
-    "@vue/cli-plugin-eslint": "^5.0.8",
-    "@vue/cli-plugin-router": "^5.0.8",
-    "@vue/cli-plugin-typescript": "^5.0.8",
-    "@vue/cli-service": "^5.0.8",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-standard": "^8.0.1",
     "@vue/eslint-config-typescript": "^12.0.0",
