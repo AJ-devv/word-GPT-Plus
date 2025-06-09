@@ -5,20 +5,26 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  base: './', // ✅ This is CRITICAL so Netlify uses relative paths
+  base: './',
   server: {
     port: 3000,
-    https:
-      process.env.NETLIFY !== 'true'
-        ? {
-            key: fs.readFileSync('./localhost-key.pem'),
-            cert: fs.readFileSync('./localhost.pem')
-          }
-        : undefined
+    https: process.env.NETLIFY !== 'true'
+      ? {
+          key: fs.readFileSync('./localhost-key.pem'),
+          cert: fs.readFileSync('./localhost.pem')
+        }
+      : undefined
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')
+    }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'public/index.html') // ✅ THIS is key
+      }
     }
   }
 })
