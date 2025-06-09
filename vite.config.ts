@@ -7,10 +7,13 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     port: 3000,
-    https: {
-      key: fs.readFileSync('./localhost-key.pem'),
-      cert: fs.readFileSync('./localhost.pem')
-    }
+    https:
+      process.env.NETLIFY !== 'true'
+        ? {
+            key: fs.readFileSync('./localhost-key.pem'),
+            cert: fs.readFileSync('./localhost.pem')
+          }
+        : undefined
   },
   resolve: {
     alias: {
